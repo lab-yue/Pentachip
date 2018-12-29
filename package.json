@@ -1,0 +1,21 @@
+{
+  "name": "ts-setup",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently --kill-others \"tsc -w\" \"node-sass -w src/scss -o dist/css/\" \"nodemon --watch src/scss --watch src/ts dev/index.js\"",
+    "serve": "node dev/index.js",
+    "lint": "tslint -p tsconfig.json"
+  },
+  "dependencies": {
+    "typescript": "^3.2.2"
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "express": "^4.16.4",
+    "node-sass": "^4.11.0",
+    "nodemon": "^1.18.9",
+    "tslint": "^5.12.0"
+  }
+}

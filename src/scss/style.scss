@@ -1,0 +1,12 @@
+html,body{
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+#app{
+    display: inline-block;
+    padding-top: 5rem;
+    width: 80%;
+    min-width: 1000px;
+    overflow: auto;
+}
