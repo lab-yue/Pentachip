@@ -14,9 +14,9 @@ export interface GameConfig {
 
 export type AxisPoint = number;
 
-export type GameChipPositionArray = [AxisPoint, AxisPoint]
+export type GameChipPositionArray = [AxisPoint, AxisPoint];
 
-export type GameChipPosition = {
+export interface GameChipPosition {
     x: AxisPoint;
     y: AxisPoint;
 }
@@ -24,19 +24,22 @@ export type GameChipPosition = {
 export type PlayerIndex = "P1" | "P2";
 
 export interface GameChipInterface {
+    id: string;
     position: GameChipPosition;
     ownedBy: PlayerIndex;
+    isSelected: boolean;
+    isHovering: boolean;
 }
 
-export type BoardState = {
+export interface BoardState {
     map: GameChipPosition[];
     chips: GameChipInterface[];
-};
+}
 
-export type GameState = {
+export interface GameState {
     turn: PlayerIndex;
     board: BoardState;
-};
+}
 
 export interface Board {
     ctx: CanvasRenderingContext2D;
@@ -44,12 +47,12 @@ export interface Board {
     draw(): void;
 }
 
-export type BoardPositionPath = {
-    from: GameChipPositionArray,
-    to: GameChipPositionArray
+export interface BoardPositionPath {
+    from: GameChipPositionArray;
+    to: GameChipPositionArray;
 }
 
-export type BoardPaths = BoardPositionPath[]
+export type BoardPaths = BoardPositionPath[];
 
 export interface Player {
     index: PlayerIndex;
