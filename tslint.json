@@ -1,4 +1,9 @@
 {
-    "extends": "tslint:latest"
+    "extends": "tslint:latest",
+    "rules":{
+      "no-namespace": false,
+      "no-console": false,
+      "interface-name": false
+    }
   }
   

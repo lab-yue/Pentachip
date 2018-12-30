@@ -1,18 +1,17 @@
 {
     "compilerOptions": {
-      "module": "commonjs",
       "lib": [
         "es2015",
         "dom"
       ],
-      "outDir": "dist/js/",
+      "module":"commonjs",
       "noImplicitAny": true,
       "allowJs": false,
       "downlevelIteration": true,
       "removeComments": true
     },
     "include": [
-      "src",
+      "src/ts/"
     ],
     "rules": {
       "no-console": false,

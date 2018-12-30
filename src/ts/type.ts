@@ -1,45 +1,41 @@
-declare namespace Pentachip {
+export interface Config {
+    PLAYER: {
+        COLOR_1: string;
+        COLOR_2: string;
+    };
+    LATTICE: {
+        SIZE: number;
+    };
+    Game_Chip: {
+        RADIUS: number;
+    };
+}
 
-    interface Config {
-        PLAYER: {
-            COLOR_1: string;
-            COLOR_2: string;
-        };
-        LATTICE: {
-            SIZE: number;
-        };
-        Game_Chip: {
-            RADIUS: number;
-        };
-    }
+export type AxisPoint = number;
 
-    type AxisPoint = number;
+export interface GameChipPosition {
+    x: AxisPoint;
+    y: AxisPoint;
+}
 
-    interface GameChipPosition {
-        x: AxisPoint;
-        y: AxisPoint;
-    }
+export type PlayerIndex = "p1" | "p2";
 
-    type PlayerIndex = "p1" | "p2";
+export interface GameChipInterface {
+    position: GameChipPosition;
+    ownedBy: PlayerIndex;
+}
 
-    interface GameChip {
-        position: GameChipPosition;
-        ownedBy: PlayerIndex;
-    }
+export type BoardState = [GameChipPosition[], GameChipInterface[]];
 
-    interface Game {
-        turn: PlayerIndex;
-        GameChips: GameChip[];
-    }
+export interface Game {
+    turn: PlayerIndex;
+    BoardState: BoardState;
+}
 
-    type BoardState = [GameChipPosition[], GameChip[]];
+export interface Board {
+    load(): BoardState;
+}
 
-    interface Board {
-        load(): BoardState;
-    }
-
-    interface Player {
-        index: PlayerIndex;
-    }
-
+export interface Player {
+    index: PlayerIndex;
 }
