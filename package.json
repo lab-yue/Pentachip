@@ -4,7 +4,6 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "webpack": "webpack",
     "dev": "concurrently --kill-others \"tsc -w\" \"node-sass -w src/scss -o dist/static/css/\" \"nodemon --watch src/scss --watch src/ts dist/server/index.js\"",
     "serve": "node dev/index.js",
     "lint": "tslint -p tsconfig.json"
