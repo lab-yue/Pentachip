@@ -1,3 +1,4 @@
+import config from './config'
 import DefaultBoard from "./map";
 import * as PentachipType from "./type";
 
@@ -6,55 +7,60 @@ export default class Pentachip {
     public config: PentachipType.GameConfig;
     public board: PentachipType.Board;
     public state: PentachipType.BoardState;
+    public canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private moving: PentachipType.GameChipInterface;
 
     constructor(canvas: HTMLCanvasElement) {
         canvas.height = 600;
         canvas.width = 600;
+        this.canvas = canvas;
         this.ctx = canvas.getContext("2d");
-        this.config = {
-            COLOR: {
-                P1: "black",
-                P2: "red",
-            },
-            LATTICE: {
-                SIZE: 100,
-            },
-            GAME_CHIP: {
-                RADIUS: 20,
-                SPEED: 0.01,
-            },
-        };
+        this.config = config;
         this.board = new DefaultBoard(this.config, this.ctx);
         this.state = this.board.load();
 
-        canvas.onmousemove = (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const mousePosition = {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top,
-            };
-            this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            this.board.draw();
+        canvas.onmousemove = e => {
+
+            const hoverPosition = this.getEventPositon(e);
+            this.board.redraw();
             this.state.chips.map(
-                (chip) => {
-                    chip.isHovering = this.calculateHovering(chip.position, mousePosition);
+                chip => {
+                    chip.hover = this.isInside(chip.position, hoverPosition);
                     this.drawChip(chip);
                 },
             );
+        };
 
+        canvas.onclick = e => {
+            const ClickPositon = this.getEventPositon(e);
+            this.board.redraw();
+            this.state.chips.map(
+                chip => {
+                    chip.selected = this.isInside(chip.position, ClickPositon);
+                    this.drawChip(chip);
+                },
+            );
+        }
+    }
+
+    public getEventPositon(e: MouseEvent): PentachipType.GameChipPosition {
+
+        const rect = this.canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top,
         };
     }
 
-    public calculateHovering(
+    private isInside(
         point1: PentachipType.GameChipPosition,
         point2: PentachipType.GameChipPosition) {
         const distence = Math.sqrt(
             Math.abs(point1.x * this.config.LATTICE.SIZE - point2.x) ** 2 +
             Math.abs(point1.y * this.config.LATTICE.SIZE - point2.y) ** 2);
-        const isHovering = distence < this.config.GAME_CHIP.RADIUS;
-        return isHovering;
+        const hover = distence < this.config.GAME_CHIP.RADIUS;
+        return hover;
     }
 
     public start(startBy: PentachipType.PlayerIndex) {
@@ -75,14 +81,40 @@ export default class Pentachip {
             this.config.GAME_CHIP.RADIUS,
             0, 2 * Math.PI, false,
         );
-        this.ctx.shadowBlur = 8;
-        this.ctx.shadowColor = chip.isHovering ? "rgba(0, 188, 212, 1)" : "rgba(0,0,0,0)";
+        this.ctx.shadowBlur = 5;
+
+        this.ctx.shadowColor = chip.hover
+            ? this.config.COLOR.SHADOW
+            : "rgba(0,0,0,0)";
+
         this.ctx.fillStyle = this.config.COLOR[chip.ownedBy];
+
         this.ctx.fill();
         this.ctx.closePath();
+        this.ctx.lineWidth = 4;
+
+        this.ctx.strokeStyle = chip.selected
+            ? "crimson"
+            : 'black';
+
+        this.ctx.stroke();
+
     }
 
-    public move(chip: PentachipType.GameChipInterface) {
+    public move(chipOrId: PentachipType.GameChipInterface | string) {
+        let chip: PentachipType.GameChipInterface;
+
+        if (typeof chipOrId === "string") {
+            
+            const chipList = this.state.chips.filter(chip => chip.id === chipOrId)
+            chipList.length === 1
+                ? chip = chipList[0]
+                : Error("ID not found")
+
+        } else {
+            chip = chipOrId
+        }
+
         this.moving = chip;
         return this;
     }

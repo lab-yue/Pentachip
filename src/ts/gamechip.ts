@@ -4,14 +4,15 @@ export default class GameChip implements GameChipInterface {
     public id: string;
     public position: GameChipPosition;
     public ownedBy: PlayerIndex;
-    public isSelected: boolean;
-    public isHovering: boolean;
+    public selected: boolean;
+    public hover: boolean;
 
     constructor(position: GameChipPosition, ownedBy: PlayerIndex) {
 
         this.position = position;
         this.ownedBy = ownedBy;
         this.id = `${position.x}-${position.y}`;
-        this.isHovering = false;
+        this.hover = false;
+        this.selected = false;
     }
 }

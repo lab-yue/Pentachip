@@ -1,5 +1,8 @@
 export interface GameConfig {
     COLOR: {
+        BACKGROUND: string,
+        GRID_LINE: string,
+        SHADOW: string,
         P1: string;
         P2: string;
     };
@@ -27,8 +30,8 @@ export interface GameChipInterface {
     id: string;
     position: GameChipPosition;
     ownedBy: PlayerIndex;
-    isSelected: boolean;
-    isHovering: boolean;
+    selected: boolean;
+    hover: boolean;
 }
 
 export interface BoardState {
@@ -45,6 +48,7 @@ export interface Board {
     ctx: CanvasRenderingContext2D;
     load(): BoardState;
     draw(): void;
+    redraw(): void;
 }
 
 export interface BoardPositionPath {

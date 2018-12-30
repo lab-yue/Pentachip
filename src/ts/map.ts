@@ -85,8 +85,13 @@ export default class DefaultBoard implements Board {
     }
 
     public draw() {
+
+        this.ctx.fillStyle = this.config.COLOR.BACKGROUND;
+        this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
         this.paths.map((path) => {
-            this.ctx.strokeStyle = "black";
+            
+            this.ctx.strokeStyle = this.config.COLOR.GRID_LINE;
             this.ctx.shadowBlur = 0;
             this.ctx.beginPath();
             this.ctx.moveTo(
@@ -97,9 +102,14 @@ export default class DefaultBoard implements Board {
                 path.to[0] * this.config.LATTICE.SIZE,
                 path.to[1] * this.config.LATTICE.SIZE,
             );
-            this.ctx.lineWidth = 4;
+            this.ctx.lineWidth = 1;
             this.ctx.stroke();
             this.ctx.closePath();
         });
     }
+
+    public redraw() {
+        this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        this.draw();
+     }
 }
