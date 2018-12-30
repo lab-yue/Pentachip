@@ -1,0 +1,17 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  text-align: center; }
+
+#app {
+  text-align:center;
+  display: inline-block;
+  padding-top: 5rem;
+  width: 80%;
+  overflow: auto; }
+
+  #game{
+    display: inline-block;
+    width: 600px;
+    height: 600px;
+    box-shadow: 0 0 1rem #ccc;}
