@@ -1,15 +1,17 @@
-import config from './config'
+import config from "./config";
 import DefaultBoard from "./map";
-import * as PentachipType from "./type";
-
+import * as p from "./type";
+import common from "./common";
+import GameChip from './gamechip'
 export default class Pentachip {
-    public turn: PentachipType.PlayerIndex;
-    public config: PentachipType.GameConfig;
-    public board: PentachipType.Board;
-    public state: PentachipType.BoardState;
+    public turn: p.PlayerIndex;
+    public config: p.GameConfig;
+    public board: p.Board;
+    public state: p.BoardState;
     public canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
-    private moving: PentachipType.GameChipInterface;
+    private moving: p.GameChipInterface;
+    private hints: p.GameChipInterface[]
 
     constructor(canvas: HTMLCanvasElement) {
         canvas.height = 600;
@@ -19,32 +21,49 @@ export default class Pentachip {
         this.config = config;
         this.board = new DefaultBoard(this.config, this.ctx);
         this.state = this.board.load();
-
-        canvas.onmousemove = e => {
-
+        this.hints = [];
+        canvas.onmousemove = (e) => {
             const hoverPosition = this.getEventPositon(e);
             this.board.redraw();
+
             this.state.chips.map(
-                chip => {
+                (chip) => {
                     chip.hover = this.isInside(chip.position, hoverPosition);
                     this.drawChip(chip);
                 },
             );
+            this.drawHints()
         };
 
-        canvas.onclick = e => {
+        canvas.onclick = (e) => {
             const ClickPositon = this.getEventPositon(e);
-            this.board.redraw();
+            let selectedSome = false;
             this.state.chips.map(
-                chip => {
-                    chip.selected = this.isInside(chip.position, ClickPositon);
-                    this.drawChip(chip);
-                },
+                (chip) => {
+
+                    const selected = this.isInside(chip.position, ClickPositon);
+
+                    if (selected) {
+                        selectedSome = true;
+                        this.hints = []
+                        this.searchHintPoints(chip.position).map(
+                            hint => this.hints.push(new GameChip(hint, "GAME"))
+                        )
+                    }
+
+                    chip.selected = selected;
+                }
             );
-        }
+
+            if (selectedSome) {
+                this.board.redraw();
+                this.drawChips();
+                this.drawHints();
+            }
+        };
     }
 
-    public getEventPositon(e: MouseEvent): PentachipType.GameChipPosition {
+    public getEventPositon(e: MouseEvent): p.GameChipPosition {
 
         const rect = this.canvas.getBoundingClientRect();
         return {
@@ -53,17 +72,7 @@ export default class Pentachip {
         };
     }
 
-    private isInside(
-        point1: PentachipType.GameChipPosition,
-        point2: PentachipType.GameChipPosition) {
-        const distence = Math.sqrt(
-            Math.abs(point1.x * this.config.LATTICE.SIZE - point2.x) ** 2 +
-            Math.abs(point1.y * this.config.LATTICE.SIZE - point2.y) ** 2);
-        const hover = distence < this.config.GAME_CHIP.RADIUS;
-        return hover;
-    }
-
-    public start(startBy: PentachipType.PlayerIndex) {
+    public start(startBy: p.PlayerIndex) {
 
         this.turn = startBy;
         this.board.draw();
@@ -72,7 +81,7 @@ export default class Pentachip {
         );
     }
 
-    public drawChip(chip: PentachipType.GameChipInterface) {
+    public drawChip(chip: p.GameChipInterface) {
 
         this.ctx.beginPath();
         this.ctx.arc(
@@ -95,37 +104,239 @@ export default class Pentachip {
 
         this.ctx.strokeStyle = chip.selected
             ? "crimson"
-            : 'black';
+            : "black";
 
         this.ctx.stroke();
 
     }
 
-    public move(chipOrId: PentachipType.GameChipInterface | string) {
-        let chip: PentachipType.GameChipInterface;
+    public drawChips() {
+        this.state.chips.map(
+            chip => this.drawChip(chip)
+        )
+    }
+
+    public drawHints() {
+        this.hints.map(
+            hint => this.drawChip(hint)
+        )
+    }
+
+    private searchHintPoints(selected: p.GameChipPosition): p.GameChipPosition[] {
+
+        const positionString = common.PositionToSting(selected);
+        const directions = this.board.directionMap[positionString];
+        let hintPointList: p.GameChipPosition[] = [];
+        directions.forEach(direction => {
+            hintPointList = hintPointList.concat(
+                this.searchDirectionHintPoints(selected, direction)
+            )
+        })
+
+        return hintPointList
+    }
+
+    private checkInclude(positionList: p.GameChipPosition[], testPoint: p.GameChipPosition): boolean {
+
+        const occupied = positionList.filter(
+            point => {
+                return point.x === testPoint.x
+                    && point.y === testPoint.y
+            }
+        )
+        return Boolean(occupied.length)
+    }
+
+    private searchDirectionHintPoints(selected: p.GameChipPosition, direction: p.Direction): p.GameChipPosition[] {
+        const hintPointList: p.GameChipPosition[] = [];
+        switch (direction) {
+
+            case p.Direction.Top: {
+                let start = selected.y - 1;
+                for (let i = start; i >= 1; i--) {
+
+                    let testPoint = { x: selected.x, y: i }
+                    const occupied = this.checkInclude(
+                        this.state.chips.map(chip => chip.position),
+                        testPoint
+                    )
+                    if (occupied) {
+                        break;
+                    } else {
+                        const inMap = this.checkInclude(this.state.map, testPoint)
+                        inMap
+                            ? hintPointList.push(testPoint)
+                            : null
+                    }
+                }
+                return hintPointList
+            }
+
+            case p.Direction.Down: {
+                let start = selected.y + 1;
+                for (let i = start; i <= 5; i++) {
+                    let testPoint = { x: selected.x, y: i }
+                    const occupied = this.checkInclude(
+                        this.state.chips.map(chip => chip.position),
+                        testPoint
+                    )
+                    if (occupied) {
+                        break;
+                    } else {
+                        const inMap = this.checkInclude(this.state.map, testPoint)
+                        inMap
+                            ? hintPointList.push(testPoint)
+                            : null
+                    }
+                }
+                return hintPointList
+            }
+
+            case p.Direction.Left: {
+                let start = selected.x - 1;
+                for (let i = start; i >= 1; i--) {
+                    let testPoint = { x: i, y: selected.y }
+                    const occupied = this.checkInclude(
+                        this.state.chips.map(chip => chip.position),
+                        testPoint
+                    )
+                    if (occupied) {
+                        break;
+                    } else {
+                        const inMap = this.checkInclude(this.state.map, testPoint)
+                        inMap
+                            ? hintPointList.push(testPoint)
+                            : null
+                    }
+                }
+                return hintPointList
+            }
+
+            case p.Direction.Right: {
+                for (let i = selected.x + 1; i <= 5; i++) {
+                    let testPoint = { x: i, y: selected.y }
+                    const occupied = this.checkInclude(
+                        this.state.chips.map(chip => chip.position),
+                        testPoint
+                    )
+                    if (occupied) {
+                        break;
+                    } else {
+                        const inMap = this.checkInclude(this.state.map, testPoint)
+                        inMap
+                            ? hintPointList.push(testPoint)
+                            : null
+                    }
+                }
+                return hintPointList
+            }
+
+
+            case p.Direction.TopLeft: {
+                for (let i = selected.x - 1; i >= 1; i--) {
+                    let testPoint = { x: i, y: i }
+                    const occupied = this.checkInclude(
+                        this.state.chips.map(chip => chip.position),
+                        testPoint
+                    )
+                    if (occupied) {
+                        break;
+                    } else {
+                        const inMap = this.checkInclude(this.state.map, testPoint)
+                        inMap
+                            ? hintPointList.push(testPoint)
+                            : null
+                    }
+                }
+                return hintPointList
+            }
+
+            case p.Direction.TopRight: {
+                for (let i = selected.x + 1; i <= 5; i++) {
+                    let testPoint = { x: i, y: 1 + selected.y - i }
+                    const occupied = this.checkInclude(
+                        this.state.chips.map(chip => chip.position),
+                        testPoint
+                    )
+                    if (occupied) {
+                        break;
+                    } else {
+                        const inMap = this.checkInclude(this.state.map, testPoint)
+                        inMap
+                            ? hintPointList.push(testPoint)
+                            : null
+                    }
+                }
+                return hintPointList
+            }
+
+            case p.Direction.DownLeft: {
+                for (let i = selected.x - 1; i >= 1; i--) {
+                    let testPoint = { x: i, y: 1 + selected.y - i }
+                    const occupied = this.checkInclude(
+                        this.state.chips.map(chip => chip.position),
+                        testPoint
+                    )
+                    if (occupied) {
+                        break;
+                    } else {
+                        const inMap = this.checkInclude(this.state.map, testPoint)
+                        inMap
+                            ? hintPointList.push(testPoint)
+                            : null
+                    }
+                }
+                return hintPointList
+            }
+
+            case p.Direction.DownRight: {
+                for (let i = selected.x + 1; i <= 5; i++) {
+                    let testPoint = { x: i, y: i }
+                    const occupied = this.checkInclude(
+                        this.state.chips.map(chip => chip.position),
+                        testPoint
+                    )
+                    if (occupied) {
+                        break;
+                    } else {
+                        const inMap = this.checkInclude(this.state.map, testPoint)
+                        inMap
+                            ? hintPointList.push(testPoint)
+                            : null
+                    }
+                }
+                return hintPointList
+            }
+
+        }
+    }
+
+
+    public move(chipOrId: p.GameChipInterface | string) {
+        let movingChip: p.GameChipInterface;
 
         if (typeof chipOrId === "string") {
-            
-            const chipList = this.state.chips.filter(chip => chip.id === chipOrId)
+
+            const chipList = this.state.chips.filter((chip) => chip.id === chipOrId);
             chipList.length === 1
-                ? chip = chipList[0]
-                : Error("ID not found")
+                ? movingChip = chipList[0]
+                : Error("ID not found");
 
         } else {
-            chip = chipOrId
+            movingChip = chipOrId;
         }
 
-        this.moving = chip;
+        this.moving = movingChip;
         return this;
     }
 
-    public to(newPosition: PentachipType.GameChipPosition) {
+    public to(newPosition: p.GameChipPosition) {
 
         return new Promise(
             (resolve, reject) => {
-                console.log(newPosition);
+                //                console.log(newPosition);
 
-                const distence: PentachipType.GameChipPosition = {
+                const distence: p.GameChipPosition = {
                     x: newPosition.x - this.moving.position.x,
                     y: newPosition.y - this.moving.position.y,
                 };
@@ -150,9 +361,8 @@ export default class Pentachip {
                         this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
                         this.drawChip(this.moving);
                         this.board.draw();
-                        this.state.chips.forEach(
-                            (chip) => this.drawChip(chip),
-                        );
+                        this.drawChips()
+                        this.drawHints()
                         requestAnimationFrame(loop);
                     } else {
                         resolve();
@@ -161,5 +371,15 @@ export default class Pentachip {
                 loop();
             },
         );
+    }
+
+    private isInside(
+        point1: p.GameChipPosition,
+        point2: p.GameChipPosition) {
+        const distence = Math.sqrt(
+            Math.abs(point1.x * this.config.LATTICE.SIZE - point2.x) ** 2 +
+            Math.abs(point1.y * this.config.LATTICE.SIZE - point2.y) ** 2);
+        const hover = distence < this.config.GAME_CHIP.RADIUS;
+        return hover;
     }
 }

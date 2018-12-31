@@ -1,5 +1,6 @@
 import { GameChipInterface, GameChipPosition, PlayerIndex } from "./type";
-
+import './common'
+import common from "./common";
 export default class GameChip implements GameChipInterface {
     public id: string;
     public position: GameChipPosition;
@@ -11,7 +12,7 @@ export default class GameChip implements GameChipInterface {
 
         this.position = position;
         this.ownedBy = ownedBy;
-        this.id = `${position.x}-${position.y}`;
+        this.id = common.PositionToSting(position);
         this.hover = false;
         this.selected = false;
     }

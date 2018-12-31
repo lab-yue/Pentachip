@@ -3,6 +3,7 @@ export interface GameConfig {
         BACKGROUND: string,
         GRID_LINE: string,
         SHADOW: string,
+        GAME: string,
         P1: string;
         P2: string;
     };
@@ -24,7 +25,7 @@ export interface GameChipPosition {
     y: AxisPoint;
 }
 
-export type PlayerIndex = "P1" | "P2";
+export type PlayerIndex = "P1" | "P2" | "GAME";
 
 export interface GameChipInterface {
     id: string;
@@ -44,11 +45,27 @@ export interface GameState {
     board: BoardState;
 }
 
+export type DirectionAtPosition = Direction[]
+export type DirectionMap = {
+    [s: string]: DirectionAtPosition
+};
 export interface Board {
     ctx: CanvasRenderingContext2D;
+    directionMap: DirectionMap
     load(): BoardState;
     draw(): void;
     redraw(): void;
+}
+
+export enum Direction {
+    TopLeft,
+    Top,
+    TopRight,
+    Left,
+    Right,
+    DownLeft,
+    Down,
+    DownRight
 }
 
 export interface BoardPositionPath {
