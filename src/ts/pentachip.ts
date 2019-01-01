@@ -213,7 +213,7 @@ export default class Pentachip extends Renderable {
         return list[Math.floor(Math.random() * list.length)];
     }
 
-    public autoPlay() {
+    public async autoPlay() {
         console.log("my turn");
         const playerChips = this.getChips(this.turn);
 
@@ -222,13 +222,29 @@ export default class Pentachip extends Renderable {
             this.selected = selected;
             const possible = this.searchHintPoints(selected.position);
             console.log(possible);
-            if (!possible) {
+            if (!possible.length) {
                 moveOne();
+            } else {
+
+                const position = this.choose(possible);
+
+                if (position === undefined) {
+                    console.log({ selected: this.selected })
+                    console.log({ possible: possible })
+                }
+                return position
             }
-            this.to(this.choose(possible));
         };
-        moveOne();
+        const position = moveOne();
+
+        await this.to(position);
     }
+    public async auto() {
+        while (!this.gameover) {
+            await this.autoPlay()
+        }
+    }
+
 
     private nextTurn(): type.PlayerIndex {
         return this.turn === "P1" ? "P2" : "P1";

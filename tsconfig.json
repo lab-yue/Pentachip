@@ -4,6 +4,7 @@
         "es2016",
         "dom"
       ],
+      "alwaysStrict": true,
       "sourceMap": true,
       "module":"commonjs",
       "noImplicitAny": true,
@@ -23,4 +24,3 @@
       ]
     }
   }
-  
