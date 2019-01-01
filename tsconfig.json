@@ -9,8 +9,11 @@
       "module":"commonjs",
       "noImplicitAny": true,
       "allowJs": false,
+      "strictNullChecks": true,
       "downlevelIteration": true,
       "removeComments": true,
+      "noImplicitThis": true,
+      "strict": true,
       "target": "es5"
     },
     "include": [

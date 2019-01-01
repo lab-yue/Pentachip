@@ -36,9 +36,10 @@ export default class Message extends Renderable {
 
         if (this.msg) {
             this._ctx.fillStyle = "black";
-            console.log(this.msg);
+            // console.log(this.msg);
             this._ctx.font = "50px Courier New";
-            this._ctx.fillText(this.msg, this._canvas.width / 2 - 100, this._canvas.height / 2 + 20);
+            this._ctx.textAlign = "center";
+            this._ctx.fillText(this.msg, this._canvas.width / 2, this._canvas.height / 2 + 20);
         }
 
     }

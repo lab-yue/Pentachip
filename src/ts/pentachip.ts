@@ -1,3 +1,4 @@
+import { rejects } from "assert";
 import common from "./common";
 import config from "./config";
 import GameChip from "./gamechip";
@@ -6,17 +7,18 @@ import Message from "./message";
 import Renderable from "./renderable";
 import * as type from "./type";
 
+let playerResolve = (a: any) => {};
+
 export default class Pentachip extends Renderable {
     public gameover: boolean;
-
-    private turn: type.PlayerIndex;
+    public turn: type.PlayerIndex;
+    private pcTurn: type.PlayerIndex;
     private config: type.GameConfig;
     private board: type.BoardInterface;
-    private selected: type.GameChipInterface;
+    private selected: type.GameChipInterface | null;
     private chips: type.GameChipInterface[];
     private hints: type.GameChipInterface[];
     private message: Message;
-    private ai: type.PlayerIndex;
 
     constructor() {
         super();
@@ -27,8 +29,11 @@ export default class Pentachip extends Renderable {
         const state = this.board.load();
         this.chips = state.chips;
         this.hints = [];
+        this.selected = null;
         this.message = new Message();
         this.gameover = false;
+        this.turn = "P1";
+        this.pcTurn = "P2";
 
         this._canvas.onmousemove = (e) => {
             const hoverPosition = this.getEventPositon(e);
@@ -42,15 +47,21 @@ export default class Pentachip extends Renderable {
                     }
                 },
             );
+            const _game = document.getElementById("game") as HTMLCanvasElement;
+
             if (hoveringSome) {
                 this.render();
-                document.getElementById("game").style.cursor = "pointer";
+                _game.style.cursor = "pointer";
             } else {
-                document.getElementById("game").style.cursor = "default";
+                _game.style.cursor = "default";
             }
         };
 
         this._canvas.onclick = (e) => {
+
+            if (this.gameover) {
+                this.reset();
+            }
 
             if (this.selected && !Boolean(this.hints.length)) {
                 return;
@@ -93,9 +104,16 @@ export default class Pentachip extends Renderable {
 
     public start(startBy: type.PlayerIndex) {
         this.turn = startBy;
-        this.ai = this.nextTurn();
+        const first = startBy === "P1"
+            ? "YOU"
+            : "PC";
+        this.message.msg = `${first} go first`;
         console.log("__START__");
         this.render();
+        setTimeout(() => {
+            this.message.msg = "";
+            this.render();
+        }, 1000);
     }
 
     public render() {
@@ -151,10 +169,12 @@ export default class Pentachip extends Renderable {
         if (typeof chipOrId === "string") {
 
             const chipList = this.chips.filter((chip) => chip.id === chipOrId);
-            chipList.length === 1
-                ? movingChip = chipList[0]
-                : Error("ID not found");
 
+            if (chipList.length === 1) {
+                movingChip = chipList[0];
+            } else {
+                return;
+            }
         } else {
             movingChip = chipOrId;
         }
@@ -166,8 +186,13 @@ export default class Pentachip extends Renderable {
     public to(newPosition: type.GameChipPosition): Promise<null> {
 
         return new Promise(
-            (resolve) => {
+            (resolve, rejects) => {
                 // console.log(newPosition);
+
+                if (!this.selected) {
+                    rejects(new Error("Not selected"));
+                    return;
+                }
 
                 const distence: type.GameChipPosition = {
                     x: newPosition.x - this.selected.position.x,
@@ -176,6 +201,10 @@ export default class Pentachip extends Renderable {
 
                 const loop = () => {
                     let done = true;
+
+                    if (!this.selected) {
+                        return;
+                    }
 
                     if (this.selected.position.x !== newPosition.x) {
                         done = false;
@@ -199,6 +228,7 @@ export default class Pentachip extends Renderable {
                         this.render();
                         this.turn = this.nextTurn();
                         resolve(null);
+                        playerResolve(null);
                     }
                 };
                 loop();
@@ -213,38 +243,45 @@ export default class Pentachip extends Renderable {
         return list[Math.floor(Math.random() * list.length)];
     }
 
-    public async autoPlay() {
-        console.log("my turn");
-        const playerChips = this.getChips(this.turn);
-
-        const moveOne = () => {
-            const selected = this.choose(playerChips);
-            this.selected = selected;
-            const possible = this.searchHintPoints(selected.position);
-            console.log(possible);
-            if (!possible.length) {
-                moveOne();
-            } else {
-
-                const position = this.choose(possible);
-
-                if (position === undefined) {
-                    console.log({ selected: this.selected })
-                    console.log({ possible: possible })
-                }
-                return position
-            }
-        };
-        const position = moveOne();
-
-        await this.to(position);
-    }
-    public async auto() {
+    public async run() {
         while (!this.gameover) {
-            await this.autoPlay()
+            this.turn === "P2"
+                ? await this.pc()
+                : await this.player();
         }
     }
 
+    public async pc() {
+        //   console.log("my turn");
+        const playerChips = this.getChips(this.turn);
+
+        const possible: type.GameChipHintInfo[] = [];
+
+        playerChips.map((chip) => {
+            possible.push({
+                chip,
+                hints: this.searchHintPoints(chip.position),
+            },
+            );
+        });
+
+        const selected = this.choose(possible);
+        this.selected = selected.chip;
+
+        const position = this.choose(selected.hints);
+
+        await this.to(position);
+    }
+    public async player() {
+        return new Promise(
+            (resolve) => playerResolve = resolve,
+        );
+    }
+
+    private reset() {
+        // TODO: inpage reload
+        location.reload();
+    }
 
     private nextTurn(): type.PlayerIndex {
         return this.turn === "P1" ? "P2" : "P1";
@@ -266,15 +303,15 @@ export default class Pentachip extends Renderable {
         const p2Chips = this.getChips("P2");
 
         if (p1Chips.length === 0 || !this.hasPotential(p1Chips)) {
-            this.message.msg = "P1 WIN";
+            this.message.msg = "YOU LOSE";
             this.gameover = true;
         }
 
         if (p2Chips.length === 0 || !this.hasPotential(p2Chips)) {
-            this.message.msg = "P2 WIN";
+            this.message.msg = "YOU WIN";
             this.gameover = true;
         }
-        console.log(this.message.msg);
+        // console.log(this.message.msg);
     }
 
     private hasPotential(chips: type.GameChipInterface[]): boolean {

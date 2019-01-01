@@ -125,10 +125,10 @@ export default class DefaultBoard extends Renderable implements BoardInterface {
 
         axis.map((x) => {
             chips.push(
-                new GameChip({ x: x + 1, y: 1 }, "P1"),
+                new GameChip({ x: x + 1, y: 1 }, "P2"),
             );
             chips.push(
-                new GameChip({ x: x + 1, y: 5 }, "P2"),
+                new GameChip({ x: x + 1, y: 5 }, "P1"),
             );
         });
 

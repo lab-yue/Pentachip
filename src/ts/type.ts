@@ -31,6 +31,11 @@ export interface GameChipPosition {
     y: AxisPoint;
 }
 
+export interface GameChipHintInfo {
+    hints: GameChipPosition[];
+    chip: GameChipInterface;
+}
+
 export type PlayerIndex = "P1" | "P2" | "GAME";
 
 export interface GameChipInterface extends Renderable {
