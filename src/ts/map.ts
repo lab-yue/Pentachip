@@ -1,12 +1,12 @@
 import GameChip from "./gamechip";
 import Renderable from "./renderable";
-import { BoardInterface, BoardPaths, BoardState, Direction as d, DirectionMap, GameChipPosition } from "./type";
+import { BoardInterface, BoardPaths, BoardState, Vectors, Direction, DirectionMap, GameChipPosition } from "./type";
 
 export default class DefaultBoard extends Renderable implements BoardInterface {
 
     public paths: BoardPaths;
     public directionMap: DirectionMap;
-
+    public vectors: Vectors
     constructor() {
         super();
         this.paths = [];
@@ -55,21 +55,21 @@ export default class DefaultBoard extends Renderable implements BoardInterface {
             },
         ]);
 
-        const tDown = [d.Left, d.Down, d.Right];
-        const tRight = [d.Top, d.Down, d.Right];
-        const tLeft = [d.Top, d.Down, d.Left];
-        const tTop = [d.Top, d.Right, d.Left];
+        const tDown: Direction[] = ["left", "down", "right"];
+        const tRight: Direction[] = ["top", "down", "right"];
+        const tLeft: Direction[] = ["top", "down", "left"];
+        const tTop: Direction[] = ["top", "right", "left"];
 
-        const cross = [d.Left, d.Top, d.Down, d.Right];
-        const saltire = [d.TopLeft, d.TopRight, d.DownLeft, d.DownRight];
+        const cross: Direction[] = ["left", "top", "down", "right"];
+        const saltire: Direction[] = ["topLeft", "topRight", "downLeft", "downRight"];
 
         this.directionMap = {
 
-            "1-1": [d.Right, d.Down, d.DownRight],
+            "1-1": ["right", "down", "downRight"],
             "2-1": [...tDown],
-            "3-1": [...tDown, d.DownLeft, d.DownRight],
+            "3-1": [...tDown, "downLeft", "downRight"],
             "4-1": [...tDown],
-            "5-1": [d.Left, d.DownLeft, d.Down],
+            "5-1": ["left", "downLeft", "down"],
 
             "1-2": [...tRight],
             "2-2": [...cross, ...saltire],
@@ -77,11 +77,11 @@ export default class DefaultBoard extends Renderable implements BoardInterface {
             "4-2": [...cross, ...saltire],
             "5-2": [...tLeft],
 
-            "1-3": [...tRight, d.TopRight, d.DownRight],
+            "1-3": [...tRight, "topRight", "downRight"],
             "2-3": [...cross],
             "3-3": [...cross, ...saltire],
             "4-3": [...cross],
-            "5-3": [...tLeft, d.TopLeft, d.DownLeft],
+            "5-3": [...tLeft, "topLeft", "downLeft"],
 
             "1-4": [...tRight],
             "2-4": [...cross, ...saltire],
@@ -89,13 +89,25 @@ export default class DefaultBoard extends Renderable implements BoardInterface {
             "4-4": [...cross, ...saltire],
             "5-4": [...tLeft],
 
-            "1-5": [d.Right, d.Top, d.TopRight],
+            "1-5": ["right", "top", "topRight"],
             "2-5": [...tTop],
-            "3-5": [...tTop, d.TopLeft, d.TopRight],
+            "3-5": [...tTop, "topLeft", "topRight"],
             "4-5": [...tTop],
-            "5-5": [d.Left, d.TopLeft, d.Top],
+            "5-5": ["left", "topLeft", "top"],
 
         };
+
+        this.vectors = {
+            topLeft: { x: -1, y: -1 },
+            top: { x: 0, y: -1 },
+            topRight: { x: 1, y: -1 },
+            left: { x: -1, y: 0 },
+            right: { x: 1, y: 0 },
+            downLeft: { x: -1, y: 1 },
+            down: { x: 0, y: 1 },
+            downRight: { x: 1, y: 1 },
+        }
+
     }
 
     public load(): BoardState {

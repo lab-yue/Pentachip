@@ -1,3 +1,5 @@
+import { type } from "os";
+
 export interface GameConfig {
     COLOR: {
         BACKGROUND: string,
@@ -49,24 +51,27 @@ export interface GameState {
     board: BoardState;
 }
 
-export type DirectionAtPosition = Direction[];
 export interface DirectionMap {
-    [s: string]: DirectionAtPosition;
+    [s: string]: Direction[];
 }
 export interface BoardInterface extends Renderable {
+    vectors: Vectors;
     directionMap: DirectionMap;
     load(): BoardState;
 }
 
-export enum Direction {
-    TopLeft,
-    Top,
-    TopRight,
-    Left,
-    Right,
-    DownLeft,
-    Down,
-    DownRight,
+export type Direction =
+    "topLeft" |
+    "top" |
+    "topRight" |
+    "left" |
+    "right" |
+    "downLeft" |
+    "down" |
+    "downRight"
+
+export type Vectors= {
+    [direction in Direction]: GameChipPosition;
 }
 
 export interface BoardPositionPath {
