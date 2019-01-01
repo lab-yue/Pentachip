@@ -1,18 +1,15 @@
 import GameChip from "./gamechip";
-import { DirectionMap, Direction as d, Board, BoardPaths, BoardState, GameChipPosition, GameConfig } from "./type";
+import Renderable from "./renderable";
+import { BoardInterface, BoardPaths, BoardState, Direction as d, DirectionMap, GameChipPosition } from "./type";
 
-export default class DefaultBoard implements Board {
+export default class DefaultBoard extends Renderable implements BoardInterface {
 
-    public ctx: CanvasRenderingContext2D;
     public paths: BoardPaths;
-    public config: GameConfig;
     public directionMap: DirectionMap;
 
-    constructor(config: GameConfig, ctx: CanvasRenderingContext2D) {
-        this.config = config;
-        this.ctx = ctx;
+    constructor() {
+        super();
         this.paths = [];
-
 
         const axis = [...Array(5).keys()];
 
@@ -58,13 +55,13 @@ export default class DefaultBoard implements Board {
             },
         ]);
 
-        const tDown = [d.Left, d.Down, d.Right]
-        const tRight = [d.Top, d.Down, d.Right]
-        const tLeft = [d.Top, d.Down, d.Left]
-        const tTop = [d.Top, d.Right, d.Left]
+        const tDown = [d.Left, d.Down, d.Right];
+        const tRight = [d.Top, d.Down, d.Right];
+        const tLeft = [d.Top, d.Down, d.Left];
+        const tTop = [d.Top, d.Right, d.Left];
 
-        const cross = [d.Left, d.Top, d.Down, d.Right]
-        const saltire = [d.TopLeft, d.TopRight, d.DownLeft, d.DownRight]
+        const cross = [d.Left, d.Top, d.Down, d.Right];
+        const saltire = [d.TopLeft, d.TopRight, d.DownLeft, d.DownRight];
 
         this.directionMap = {
 
@@ -98,7 +95,7 @@ export default class DefaultBoard implements Board {
             "4-5": [...tTop],
             "5-5": [d.Left, d.TopLeft, d.Top],
 
-        }
+        };
     }
 
     public load(): BoardState {
@@ -129,32 +126,27 @@ export default class DefaultBoard implements Board {
         };
     }
 
-    public draw() {
+    public render() {
 
-        this.ctx.fillStyle = this.config.COLOR.BACKGROUND;
-        this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+        this._ctx.fillStyle = this._config.COLOR.BACKGROUND;
+        this._ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
         this.paths.map((path) => {
 
-            this.ctx.strokeStyle = this.config.COLOR.GRID_LINE;
-            this.ctx.shadowBlur = 0;
-            this.ctx.beginPath();
-            this.ctx.moveTo(
-                path.from[0] * this.config.LATTICE.SIZE,
-                path.from[1] * this.config.LATTICE.SIZE,
+            this._ctx.strokeStyle = this._config.COLOR.GRID_LINE;
+            this._ctx.shadowBlur = 0;
+            this._ctx.beginPath();
+            this._ctx.moveTo(
+                path.from[0] * this._config.LATTICE.SIZE,
+                path.from[1] * this._config.LATTICE.SIZE,
             );
-            this.ctx.lineTo(
-                path.to[0] * this.config.LATTICE.SIZE,
-                path.to[1] * this.config.LATTICE.SIZE,
+            this._ctx.lineTo(
+                path.to[0] * this._config.LATTICE.SIZE,
+                path.to[1] * this._config.LATTICE.SIZE,
             );
-            this.ctx.lineWidth = 1;
-            this.ctx.stroke();
-            this.ctx.closePath();
+            this._ctx.lineWidth = 1;
+            this._ctx.stroke();
+            this._ctx.closePath();
         });
-    }
-
-    public redraw() {
-        this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        this.draw();
     }
 }

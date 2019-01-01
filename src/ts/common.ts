@@ -6,10 +6,10 @@ export function stringToPosition(s: string): GameChipPosition {
 }
 
 export function PositionToSting(position: GameChipPosition): string {
-    return `${position.x}-${position.y}`
+    return `${position.x}-${position.y}`;
 }
 
 export default {
     stringToPosition,
-    PositionToSting
+    PositionToSting,
 };

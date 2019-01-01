@@ -16,6 +16,10 @@ export interface GameConfig {
     };
 }
 
+export interface Renderable {
+    render(): void;
+}
+
 export type AxisPoint = number;
 
 export type GameChipPositionArray = [AxisPoint, AxisPoint];
@@ -27,7 +31,7 @@ export interface GameChipPosition {
 
 export type PlayerIndex = "P1" | "P2" | "GAME";
 
-export interface GameChipInterface {
+export interface GameChipInterface extends Renderable {
     id: string;
     position: GameChipPosition;
     ownedBy: PlayerIndex;
@@ -45,16 +49,13 @@ export interface GameState {
     board: BoardState;
 }
 
-export type DirectionAtPosition = Direction[]
-export type DirectionMap = {
-    [s: string]: DirectionAtPosition
-};
-export interface Board {
-    ctx: CanvasRenderingContext2D;
-    directionMap: DirectionMap
+export type DirectionAtPosition = Direction[];
+export interface DirectionMap {
+    [s: string]: DirectionAtPosition;
+}
+export interface BoardInterface extends Renderable {
+    directionMap: DirectionMap;
     load(): BoardState;
-    draw(): void;
-    redraw(): void;
 }
 
 export enum Direction {
@@ -65,7 +66,7 @@ export enum Direction {
     Right,
     DownLeft,
     Down,
-    DownRight
+    DownRight,
 }
 
 export interface BoardPositionPath {

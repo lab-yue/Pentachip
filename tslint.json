@@ -1,9 +1,15 @@
 {
-    "extends": "tslint:latest",
-    "rules":{
-      "no-namespace": false,
-      "no-console": false,
-      "interface-name": false
-    }
+  "extends": "tslint:latest",
+  "rules": {
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore"
+    ],
+    "object-literal-sort-keys": false,
+    "no-namespace": false,
+    "no-console": false,
+    "interface-name": false
   }
-  
+}

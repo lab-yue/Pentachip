@@ -1,7 +1,6 @@
 import Pentachip from "./pentachip";
-const canvas = document.getElementById("game");
-const game = new Pentachip(canvas as HTMLCanvasElement);
 
+const game = new Pentachip();
 game.start("P1");
 
 const test = game.state.chips;
