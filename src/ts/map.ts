@@ -1,12 +1,12 @@
 import GameChip from "./gamechip";
 import Renderable from "./renderable";
-import { BoardInterface, BoardPaths, BoardState, Vectors, Direction, DirectionMap, GameChipPosition } from "./type";
+import { BoardInterface, BoardPaths, BoardState, Direction, DirectionMap, GameChipPosition, Vectors } from "./type";
 
 export default class DefaultBoard extends Renderable implements BoardInterface {
 
     public paths: BoardPaths;
     public directionMap: DirectionMap;
-    public vectors: Vectors
+    public vectors: Vectors;
     constructor() {
         super();
         this.paths = [];
@@ -106,7 +106,7 @@ export default class DefaultBoard extends Renderable implements BoardInterface {
             downLeft: { x: -1, y: 1 },
             down: { x: 0, y: 1 },
             downRight: { x: 1, y: 1 },
-        }
+        };
 
     }
 

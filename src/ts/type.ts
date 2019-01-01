@@ -68,11 +68,11 @@ export type Direction =
     "right" |
     "downLeft" |
     "down" |
-    "downRight"
+    "downRight";
 
 export type Vectors= {
     [direction in Direction]: GameChipPosition;
-}
+};
 
 export interface BoardPositionPath {
     from: GameChipPositionArray;
